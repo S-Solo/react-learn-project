@@ -1,0 +1,15 @@
+.app-posts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 24px 0;
+    &__container {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        &__post {
+            margin: 12px;
+        }
+    }
+}

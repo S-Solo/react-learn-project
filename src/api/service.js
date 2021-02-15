@@ -18,8 +18,9 @@ class Service {
             })
     }
 
-    getPosts = (start, limit) => {
-        return this._request('GET', `/posts?_start=${start}&_limit=${limit}`)
+    getPosts = (start, limit = 9) => {
+        return this._request('GET', `/posts?_start=${start}&_limit=${limit}&_delay=6000`);
+
     }
 
     getAllPosts = () => {
@@ -36,6 +37,10 @@ class Service {
 
     updatePost = (id, data) => {
         return this._request('PATCH', `/posts/${id}`, data)
+    }
+
+    deletePost = (id) => {
+        return this._request('DELETE', `/posts/${id}`)
     }
 }
 
