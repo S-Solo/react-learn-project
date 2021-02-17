@@ -17,7 +17,7 @@ export class Posts extends Component {
 
     componentDidMount() {
         service.getPosts(this.state.start) // 0, 9
-            .then(data => {
+            .then(data => { // []
                 this.setState({
                     posts: data,
                 })
@@ -85,13 +85,18 @@ export class Posts extends Component {
 
     render() {
         const { loading, hasMore, posts } = this.state;
+
+        if (!posts) {
+            return <div>Loading...</div>
+        }
+
         return (
             <div className="app-posts">
-                {posts ? (
+                {posts.length > 0 ? (
                     <>
                         <div className="app-posts__container">
                             {
-                                posts.map(post =>
+                                posts.map(post => // []
                                     <Post
                                         key={post.id}
                                         post={post}
@@ -103,9 +108,8 @@ export class Posts extends Component {
                         {hasMore && <button onClick={this.getMore} disabled={loading}>{loading ? 'Loading...' : 'Get More'}</button>}
                     </>
                 ) : (
-                        <div>Loading...</div>
+                        <div>No results</div>
                     )}
-
             </div>
         )
     }

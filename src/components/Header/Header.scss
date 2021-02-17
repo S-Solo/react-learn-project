@@ -11,4 +11,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  ul {
+    display: flex;
+    li {
+      margin: 0 12px;
+      a {
+        text-decoration: none;
+        color: unset;
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
+    }
+  }
 }
