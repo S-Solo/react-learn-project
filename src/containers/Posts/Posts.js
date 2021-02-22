@@ -1,22 +1,25 @@
 import React, { Component } from 'react';
 
+import { Button } from "@material-ui/core";
+
 import Post from 'components/Post/Post';
 import service from 'api/service';
+import fbService from 'api/fbService';
 
 import './Posts.scss';
 
-const limit = 9;
+const limit = 8;
 
 export class Posts extends Component {
     state = {
         posts: null,
-        start: 0,
+        startAt: 0,
         hasMore: true,
         loading: false,
     }
 
     componentDidMount() {
-        service.getPosts(this.state.start) // 0, 9
+        fbService.getPosts(this.state.startAt, limit) // 0, 9
             .then(data => { // []
                 this.setState({
                     posts: data,
@@ -41,7 +44,7 @@ export class Posts extends Component {
     }
 
     createPost = () => {
-        service.createPost({
+        fbService.createPost({
             title: 'Awesome Title',
             body: 'Nice body',
             userId: 1
@@ -54,7 +57,7 @@ export class Posts extends Component {
     }
 
     deletePost = (id) => {
-        service.deletePost(id)
+        fbService.deletePost(id)
             .then(() => { // {}
                 this.setState({
                     posts: this.state.posts.filter((el) => { // 1, 2, 3, 4, 5
@@ -68,13 +71,14 @@ export class Posts extends Component {
     }
 
     getMore = () => {
-        const newStart = this.state.start + limit; /// syncron
+        const newstartAt = this.state.startAt + limit + 1; // 0, 9, 18
         this.setState({
-            start: newStart,
-            loading: true // 9, 9   18, 9,  27, 9
+            startAt: newstartAt,
+            loading: true
         })
-        service.getPosts(newStart)
+        fbService.getPosts(newstartAt, newstartAt + limit)
             .then(data => {
+                console.log('data: ', data);
                 this.setState({
                     posts: [...this.state.posts, ...data],
                     hasMore: data.length < limit ? false : true, // 1 < 9 
@@ -101,10 +105,13 @@ export class Posts extends Component {
                                         key={post.id}
                                         post={post}
                                         className="app-posts__container__post"
+                                        isLink
+                                        remove={() => this.deletePost(post.id)}
                                     />
                                 )
                             }
                         </div>
+                        <Button onClick={this.createPost}>Create Post</Button>
                         {hasMore && <button onClick={this.getMore} disabled={loading}>{loading ? 'Loading...' : 'Get More'}</button>}
                     </>
                 ) : (

@@ -1,45 +1,101 @@
-import service from 'api/service';
-import Post from 'components/Post/Post';
-import React, { Component } from 'react'
+import React, { Component } from "react";
+import { Modal, Button } from "@material-ui/core";
 
-export class PostDetails extends Component {
+import Post from "components/Post/Post";
+import fbService from "api/fbService";
+
+import "./PostDetails.scss";
+export default class ProductInfo extends Component {
     constructor(props) {
         super(props);
-        console.log(props);
-        console.log(props.match.params.postId)
         this.state = {
-            post: null
-        }
+            post: null,
+            isEditPopupOpen: false,
+            titleValue: "",
+            bodyValue: "",
+        };
     }
 
     componentDidMount() {
-        service.getPost(this.props.match.params.postId)
-            .then(data => {
+        fbService.getPost(this.props.match.params.postId)
+            .then((data) => {
                 this.setState({
-                    post: data
-                })
-            })
-            .catch(err => {
-                console.log(err);
-                this.props.history.push('/')
-            })
+                    post: data,
+                    titleValue: data.title,
+                    bodyValue: data.body
+                });
+            });
     }
 
+    toggleEditPopup = () => {
+        this.setState({
+            isEditPopupOpen: !this.state.isEditPopupOpen,
+        });
+    };
+
+    changeValue = (name, value) => {
+        this.setState({
+            [name]: value
+        });
+    };
+
+    savePost = () => {
+        fbService
+            .updatePost({
+                ...this.state.post,
+                title: this.state.titleValue,
+                body: this.state.bodyValue
+            })
+            .then((res) => {
+                this.setState({
+                    post: {
+                        ...this.state.post,
+                        title: this.state.titleValue,
+                        body: this.state.bodyValue
+                    },
+                    isEditPopupOpen: false,
+                });
+            });
+    };
+
     render() {
-        const { post } = this.state;
+        const { post, isEditPopupOpen, titleValue, bodyValue } = this.state;
 
         if (!post) {
-            return <div>Loading...</div>
+            return null;
         }
 
         return (
-            <div style={{margin: '20px 0'}}>
-                <Post
-                    post={this.state.post}
-                />
+            <div className="product-info">
+                <Post post={post} onClick={() => { }} edit={this.toggleEditPopup} />
+                <Modal
+                    className="product-info__modal"
+                    open={isEditPopupOpen}
+                    onClose={this.toggleEditPopup}
+                >
+                    <div className="product-info__modal__block">
+                        <input
+                            value={titleValue}
+                            className="product-info__modal__block__input"
+                            type="text"
+                            onChange={(e) => this.changeValue('titleValue', e.target.value)}
+                        />
+                        <input
+                            value={bodyValue}
+                            className="product-info__modal__block__input"
+                            type="text"
+                            onChange={(e) => this.changeValue('bodyValue', e.target.value)}
+                        />
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={this.savePost}
+                            className="product-info__modal__block__btn"
+                            title="Save"
+                        >Save</Button>
+                    </div>
+                </Modal>
             </div>
-        )
+        );
     }
 }
-
-export default PostDetails
