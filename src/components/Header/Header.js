@@ -3,14 +3,35 @@ import Link from 'components/Link/Link';
 
 import './Header.scss';
 
+const headerLinks = [
+    {
+        title: 'Homepage',
+        to: '/'
+    },
+    {
+        title: 'Posts',
+        to: '/posts'
+    },
+    {
+        title: 'Todos',
+        to: '/todos'
+    },
+    {
+        title: 'Auth',
+        to: '/auth'
+    },
+]
+
 const Header = () => {
     return (
         <div className="app-header">
             <nav>
                 <ul>
-                    <li><Link to="/">homepage</Link></li>
-                    <li><Link to="/posts">posts</Link></li>
-                    <li><Link to="/todos">todos</Link></li>
+                    {headerLinks.map(el => {
+                        return (
+                            <li key={el.title}><Link to={el.to}>{el.title}</Link></li>
+                        )
+                    })}
                 </ul>
             </nav>
         </div>
