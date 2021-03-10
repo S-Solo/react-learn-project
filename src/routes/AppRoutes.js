@@ -9,6 +9,7 @@ import PostDetails from 'containers/PostDetails/PostDetails';
 import Auth from 'containers/Auth/Auth'; // Authentication
 
 const AppRoutes = () => {
+
     return (
         <Layout>
             <Switch>

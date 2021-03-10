@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import { AppContext } from 'context/AppContext';
+import React, { useState, useContext, useEffect } from 'react';
 
 import Login from './Login/Login';
 import Signup from './Signup/Signup';
 
-const Auth = () => {
-    const [isLogin, setIsLogin] = useState(true);
+const Auth = ({ location }) => {
+    const context = useContext(AppContext);
+    const [isLogin, setIsLogin] = useState(false);
 
     const toggleView = () => {
         setIsLogin(!isLogin);

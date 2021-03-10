@@ -1,15 +1,19 @@
-import React, { Component } from 'react';
+import React, { Component, createContext } from 'react';
 
 import { Button } from "@material-ui/core";
 
 import Post from 'components/Post/Post';
 import service from 'api/service';
 import fbService from 'api/fbService';
+import { AppContext } from 'context/AppContext';
 
 import './Posts.scss';
 
-const limit = 8;
+export const PostsContext = createContext({
+    posts: null
+})
 
+const limit = 8;
 export class Posts extends Component {
     state = {
         posts: null,

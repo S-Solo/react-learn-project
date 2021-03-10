@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import PropType from "prop-types";
 import { Button } from "@material-ui/core";
 import Link from "components/Link/Link";
+import { AppContext } from 'context/AppContext';
 
 import "./Post.scss";
 
@@ -13,6 +14,7 @@ const Post = ({
     edit = () => { },
     remove = () => { }
 }) => {
+    const context = useContext(AppContext)
 
     const removeHandler = (e) => {
         e.preventDefault();
@@ -24,9 +26,11 @@ const Post = ({
         return isLink ? (
             <>
                 <Link to={`/posts/${post.id}`} className={containerClassName}>
-                    <Button onClick={removeHandler} >
-                        Remove
-                    </Button>
+                    {context.state.user ? (
+                        <Button onClick={removeHandler} >
+                            Remove
+                        </Button>
+                    ) : null}
                     {children}
                 </Link>
             </>

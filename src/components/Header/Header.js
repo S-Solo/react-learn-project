@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Link from 'components/Link/Link';
+import { AppContext } from 'context/AppContext';
 
 import './Header.scss';
 
@@ -15,14 +16,11 @@ const headerLinks = [
     {
         title: 'Todos',
         to: '/todos'
-    },
-    {
-        title: 'Auth',
-        to: '/auth'
-    },
+    }
 ]
 
 const Header = () => {
+    const context = useContext(AppContext);
     return (
         <div className="app-header">
             <nav>
@@ -32,6 +30,13 @@ const Header = () => {
                             <li key={el.title}><Link to={el.to}>{el.title}</Link></li>
                         )
                     })}
+                    {
+                        !context.user ? (
+                            <li key='auth'><Link to='/auth'>Auth</Link></li>
+                        ) : (
+                                <li key='profile'><Link to='/profile'>Profile</Link></li>
+                            )
+                    }
                 </ul>
             </nav>
         </div>
