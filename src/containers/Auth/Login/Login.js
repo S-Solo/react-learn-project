@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import { Button } from '@material-ui/core';
 import Input from 'components/Input/Input';
 import fbService from 'api/fbService';
+import { actionTypes } from 'context/actionTypes';
+import { AppContext } from 'context/AppContext';
 
 import './Login.scss';
 
 const Login = () => {
+    const history = useHistory();
+    const context = useContext(AppContext);
     const [credentials, setCredentials] = useState({
         email: '',
         password: '',
@@ -21,6 +26,9 @@ const Login = () => {
 
     const loginHandler = async () => {
         const user = await fbService.login(credentials);
+        context.dispatch({ type: actionTypes.SET_USER, payload: { user } })
+        localStorage.setItem("user", JSON.stringify(user));
+        history.push('/profile');
         console.log(user);
     }
 
@@ -37,6 +45,7 @@ const Login = () => {
                 onChange={(e) => changeHandler('password', e.target.value)}
                 placeholder="Enter password"
                 className="app-auth-login__input"
+                type="password"
             />
             <Button
                 variant="contained"

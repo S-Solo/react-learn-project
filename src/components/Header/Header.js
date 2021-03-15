@@ -31,7 +31,7 @@ const Header = () => {
                         )
                     })}
                     {
-                        !context.user ? (
+                        !context.state.user ? (
                             <li key='auth'><Link to='/auth'>Auth</Link></li>
                         ) : (
                                 <li key='profile'><Link to='/profile'>Profile</Link></li>

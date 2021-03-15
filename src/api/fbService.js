@@ -104,7 +104,15 @@ class FbService {
 
     signup = async (credentials) => {
         const res = await firebase.auth().createUserWithEmailAndPassword(credentials.email, credentials.password)
+        const user = firebase.auth().currentUser;
+        await user.updateProfile({
+            displayName: credentials.name
+        })
         return this.fromResToUser(res);
+    }
+
+    logout = async () => {
+       await firebase.auth().signOut();
     }
 
 }

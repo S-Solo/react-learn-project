@@ -1,4 +1,5 @@
 import React, { Component, createContext } from 'react';
+import { connect } from 'react-redux';
 
 import { Button } from "@material-ui/core";
 
@@ -6,8 +7,11 @@ import Post from 'components/Post/Post';
 import service from 'api/service';
 import fbService from 'api/fbService';
 import { AppContext } from 'context/AppContext';
+import { actionTypes } from 'context/actionTypes';
+import PostModal from "components/PostModal/PostModal";
 
 import './Posts.scss';
+import { reduxActionTypes } from 'reducers/reduxActionTypes';
 
 export const PostsContext = createContext({
     posts: null
@@ -16,19 +20,24 @@ export const PostsContext = createContext({
 const limit = 8;
 export class Posts extends Component {
     state = {
-        posts: null,
         startAt: 0,
         hasMore: true,
         loading: false,
+        isCreatePopupOpen: false,
+        titleValue: '',
+        bodyValue: '',
     }
 
+    static contextType = AppContext
+
     componentDidMount() {
-        fbService.getPosts(this.state.startAt, limit) // 0, 9
-            .then(data => { // []
-                this.setState({
-                    posts: data,
+        if (!this.props.posts) {
+            fbService.getPosts(this.state.startAt, limit) // 0, 9
+                .then(data => { // []
+                    // this.context.dispatch({ type: actionTypes.SET_POSTS, payload: { posts: data } })
+                    this.props.setReduxPosts(data);
                 })
-            })
+        }
     }
 
     updatePost = (id) => {
@@ -48,26 +57,28 @@ export class Posts extends Component {
     }
 
     createPost = () => {
-        fbService.createPost({
-            title: 'Awesome Title',
-            body: 'Nice body',
-            userId: 1
-        })
+        const newPost = {
+            title: this.state.titleValue,
+            body: this.state.bodyValue,
+            userId: 1,
+        }
+        fbService.createPost(newPost)
             .then(data => {
-                this.setState({
-                    posts: [...this.state.posts, data]
+                this.context.dispatch({
+                    type: actionTypes.CREATE_POST,
+                    payload: { post: data }
                 })
+                this.toggleCreateModal();
             })
     }
 
     deletePost = (id) => {
         fbService.deletePost(id)
             .then(() => { // {}
-                this.setState({
-                    posts: this.state.posts.filter((el) => { // 1, 2, 3, 4, 5
-                        return el.id !== id; // false
+                fbService.getPosts(this.state.startAt, this.state.posts)
+                    .then(res => {
+
                     })
-                })
             })
             .catch(err => {
                 console.log(err)
@@ -81,25 +92,40 @@ export class Posts extends Component {
             loading: true
         })
         fbService.getPosts(newstartAt, newstartAt + limit)
-            .then(data => {
+            .then(data => { // [{.psot1, ...}]
                 console.log('data: ', data);
+                // this.context.dispatch({ type: actionTypes.GET_MORE_POSTS, payload: { posts: data } })
+                this.props.getReduxPosts(data);
                 this.setState({
-                    posts: [...this.state.posts, ...data],
                     hasMore: data.length < limit ? false : true, // 1 < 9 
                     loading: false
                 })
             }) // 3s
     }
 
+    toggleCreateModal = () => {
+        this.setState(prev => ({ isCreatePopupOpen: !prev.isCreatePopupOpen }));
+    }
+
+    changeValue = (e) => {
+        const { name, value } = e.target;
+        this.setState({
+            [name]: value
+        });
+    };
+
     render() {
-        const { loading, hasMore, posts } = this.state;
+        console.log("this.props: ", this.props)
+        const { loading, hasMore, isCreatePopupOpen, titleValue, bodyValue } = this.state;
+        // const { state: { posts } } = this.context;
+        const { posts } = this.props;
 
         if (!posts) {
             return <div>Loading...</div>
         }
 
         return (
-            <div className="app-posts">
+            <div className={`app-posts`}>
                 {posts.length > 0 ? (
                     <>
                         <div className="app-posts__container">
@@ -115,15 +141,47 @@ export class Posts extends Component {
                                 )
                             }
                         </div>
-                        <Button onClick={this.createPost}>Create Post</Button>
+                        <Button onClick={this.toggleCreateModal}>Create Post</Button>
                         {hasMore && <button onClick={this.getMore} disabled={loading}>{loading ? 'Loading...' : 'Get More'}</button>}
                     </>
                 ) : (
                         <div>No results</div>
                     )}
+
+                <PostModal
+                    action={this.createPost}
+                    bodyValue={bodyValue}
+                    titleValue={titleValue}
+                    changeValue={this.changeValue}
+                    isOpen={isCreatePopupOpen}
+                    onClose={this.toggleCreateModal}
+                    buttonTitle="Create"
+                />
             </div>
         )
     }
 }
 
-export default Posts
+const mapStateToProps = (state) => {
+    return {
+        posts: state.posts,
+        count: state.count
+    }
+}
+
+const mapDispatchToProps = {
+    setReduxPosts: (posts) => ({
+        type: reduxActionTypes.SET_POSTS,
+        payload: {
+            posts,
+        }
+    }),
+    getReduxPosts: (posts) => ({
+        type: reduxActionTypes.SET_POSTS,
+        payload: {
+            posts,
+        }
+    })
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Posts)

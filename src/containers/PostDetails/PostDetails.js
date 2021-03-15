@@ -1,10 +1,12 @@
 import React, { Component } from "react";
-import { Modal, Button } from "@material-ui/core";
 
 import Post from "components/Post/Post";
 import fbService from "api/fbService";
 
 import "./PostDetails.scss";
+import { AppContext } from "context/AppContext";
+import { actionTypes } from "context/actionTypes";
+import PostModal from "components/PostModal/PostModal";
 export default class ProductInfo extends Component {
     constructor(props) {
         super(props);
@@ -15,6 +17,8 @@ export default class ProductInfo extends Component {
             bodyValue: "",
         };
     }
+
+    static contextType = AppContext;
 
     componentDidMount() {
         fbService.getPost(this.props.match.params.postId)
@@ -33,7 +37,8 @@ export default class ProductInfo extends Component {
         });
     };
 
-    changeValue = (name, value) => {
+    changeValue = (e) => {
+        const { name, value } = e.target;
         this.setState({
             [name]: value
         });
@@ -47,14 +52,19 @@ export default class ProductInfo extends Component {
                 body: this.state.bodyValue
             })
             .then((res) => {
+                const updatedPost = {
+                    ...this.state.post,
+                    title: this.state.titleValue,
+                    body: this.state.bodyValue
+                }
                 this.setState({
-                    post: {
-                        ...this.state.post,
-                        title: this.state.titleValue,
-                        body: this.state.bodyValue
-                    },
+                    post: updatedPost,
                     isEditPopupOpen: false,
                 });
+                const { state: { posts } } = this.context;
+                if (posts && posts.find(el => el.id === this.state.post.id)) {
+                    this.context.dispatch({ type: actionTypes.UPDATE_POST, payload: { post: updatedPost } })
+                }
             });
     };
 
@@ -68,33 +78,15 @@ export default class ProductInfo extends Component {
         return (
             <div className="product-info">
                 <Post post={post} onClick={() => { }} edit={this.toggleEditPopup} />
-                <Modal
-                    className="product-info__modal"
-                    open={isEditPopupOpen}
+                <PostModal
+                    action={this.savePost}
+                    bodyValue={bodyValue}
+                    titleValue={titleValue}
+                    changeValue={this.changeValue}
+                    isOpen={isEditPopupOpen}
                     onClose={this.toggleEditPopup}
-                >
-                    <div className="product-info__modal__block">
-                        <input
-                            value={titleValue}
-                            className="product-info__modal__block__input"
-                            type="text"
-                            onChange={(e) => this.changeValue('titleValue', e.target.value)}
-                        />
-                        <input
-                            value={bodyValue}
-                            className="product-info__modal__block__input"
-                            type="text"
-                            onChange={(e) => this.changeValue('bodyValue', e.target.value)}
-                        />
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={this.savePost}
-                            className="product-info__modal__block__btn"
-                            title="Save"
-                        >Save</Button>
-                    </div>
-                </Modal>
+                    buttonTitle="Save"
+                />
             </div>
         );
     }

@@ -1,19 +1,30 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 // import fbService from 'api/fbService'
 export class HomePage extends Component {
 
-    componentDidMount() {
-        // fbService.inilializePosts();
-    }
-
     render() {
+        console.log('props: ', this.props);
         return (
             <div>
-                Home page
+                <button onClick={this.props.incrementCount}>INCREMENT</button>
+                <span style={{ margin: '0 12px' }}>{this.props.count}</span>
+                <button onClick={this.props.decrementCount}>DECREMENT</button>
             </div>
         )
     }
 }
 
-export default HomePage
+const mapStateToProps = (state) => {
+    return {
+        count: state.count
+    }
+}
+
+const mapDispatchToProps = {
+    incrementCount: () => ({ type: 'INCREMENT_COUNT' }),
+    decrementCount: () => ({ type: 'DECREMENT_COUNT' })
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomePage);
