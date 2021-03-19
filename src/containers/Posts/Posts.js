@@ -7,11 +7,11 @@ import Post from 'components/Post/Post';
 import service from 'api/service';
 import fbService from 'api/fbService';
 import { AppContext } from 'context/AppContext';
-import { actionTypes } from 'context/actionTypes';
 import PostModal from "components/PostModal/PostModal";
 
+import { getReduxPosts, setPostsHasMore, setReduxPosts } from 'actions/postActions';
+
 import './Posts.scss';
-import { reduxActionTypes } from 'reducers/reduxActionTypes';
 
 export const PostsContext = createContext({
     posts: null
@@ -20,8 +20,7 @@ export const PostsContext = createContext({
 const limit = 8;
 export class Posts extends Component {
     state = {
-        startAt: 0,
-        hasMore: true,
+        startAt: this.props.posts ? this.props.posts.length : 0,
         loading: false,
         isCreatePopupOpen: false,
         titleValue: '',
@@ -64,20 +63,21 @@ export class Posts extends Component {
         }
         fbService.createPost(newPost)
             .then(data => {
-                this.context.dispatch({
-                    type: actionTypes.CREATE_POST,
-                    payload: { post: data }
-                })
                 this.toggleCreateModal();
+                if (!this.props.postsHasMore) {
+
+                }
+                this.props.history.push(`/posts/${data.id}`);
             })
     }
 
     deletePost = (id) => {
+        const { startAt } = this.state;
         fbService.deletePost(id)
             .then(() => { // {}
-                fbService.getPosts(this.state.startAt, this.state.posts)
+                fbService.getPosts(0, startAt !== 0 ? startAt + limit : limit) // 0 - 9 
                     .then(res => {
-
+                        this.props.setReduxPosts(res);
                     })
             })
             .catch(err => {
@@ -95,9 +95,9 @@ export class Posts extends Component {
             .then(data => { // [{.psot1, ...}]
                 console.log('data: ', data);
                 // this.context.dispatch({ type: actionTypes.GET_MORE_POSTS, payload: { posts: data } })
+                this.props.setPostsHasMore(data.length < limit ? false : true)
                 this.props.getReduxPosts(data);
                 this.setState({
-                    hasMore: data.length < limit ? false : true, // 1 < 9 
                     loading: false
                 })
             }) // 3s
@@ -116,9 +116,9 @@ export class Posts extends Component {
 
     render() {
         console.log("this.props: ", this.props)
-        const { loading, hasMore, isCreatePopupOpen, titleValue, bodyValue } = this.state;
+        const { loading, isCreatePopupOpen, titleValue, bodyValue } = this.state;
         // const { state: { posts } } = this.context;
-        const { posts } = this.props;
+        const { posts, postsHasMore } = this.props;
 
         if (!posts) {
             return <div>Loading...</div>
@@ -142,7 +142,7 @@ export class Posts extends Component {
                             }
                         </div>
                         <Button onClick={this.toggleCreateModal}>Create Post</Button>
-                        {hasMore && <button onClick={this.getMore} disabled={loading}>{loading ? 'Loading...' : 'Get More'}</button>}
+                        {postsHasMore && <button onClick={this.getMore} disabled={loading}>{loading ? 'Loading...' : 'Get More'}</button>}
                     </>
                 ) : (
                         <div>No results</div>
@@ -160,28 +160,20 @@ export class Posts extends Component {
             </div>
         )
     }
-}
+} 
 
 const mapStateToProps = (state) => {
+    console.log('state: ', state);
     return {
-        posts: state.posts,
-        count: state.count
+        posts: state.postsData.posts,
+        postsHasMore: state.postsData.postsHasMore
     }
 }
 
 const mapDispatchToProps = {
-    setReduxPosts: (posts) => ({
-        type: reduxActionTypes.SET_POSTS,
-        payload: {
-            posts,
-        }
-    }),
-    getReduxPosts: (posts) => ({
-        type: reduxActionTypes.SET_POSTS,
-        payload: {
-            posts,
-        }
-    })
+    getReduxPosts,
+    setReduxPosts,
+    setPostsHasMore,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Posts)

@@ -1,28 +1,10 @@
-import { createStore } from 'redux';
-import { reduxActionTypes } from './reduxActionTypes';
+import { createStore, combineReducers } from 'redux';
+import postReducer from './postReducer';
+import countReducer from './countReducer';
 
-const initialState = {
-    count: 5,
-    posts: null
-}
+const reducers = combineReducers({
+    postsData: postReducer,
+    count: countReducer,
+})
 
-const reducer = (state = initialState, action) => {
-    switch (action.type) {
-        case reduxActionTypes.SET_POSTS:
-            console.log(action)
-            return {
-                ...state,
-                posts: action.payload.posts
-            }
-        case reduxActionTypes.GET_MORE_POSTS:
-            console.log(action)
-            return {
-                ...state,
-                posts: [...state.posts, ...action.payload.posts],
-            }
-        default:
-            return state;
-    }
-}
-
-export const store = createStore(reducer);
+export const store = createStore(reducers);

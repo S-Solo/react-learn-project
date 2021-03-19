@@ -1,6 +1,7 @@
 import firebase from 'firebase/app';
 import 'firebase/database';
 import 'firebase/auth';
+import 'firebase/storage';
 import firebaseConfig from './firebaseConfig';
 
 import postsMockup from 'data-mockup/posts.mockup';
